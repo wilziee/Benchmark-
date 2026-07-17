@@ -1,70 +1,46 @@
-class DeviceDetector {
-    static async getInfo() {
-        const info = {
-            os: "Unknown OS",
-            browser: "Unknown Browser",
-            cpuCores: navigator.hardwareConcurrency || "Unknown",
-            ram: navigator.deviceMemory ? `${navigator.deviceMemory} GB+` : "Hidden by Browser",
-            resolution: `${window.screen.width}x${window.screen.height}`,
-            battery: "N/A",
-            network: "Unknown",
-            gpu: "Detecting..."
-        };
-
-        // OS Detection
-        const ua = navigator.userAgent;
-        if (/android/i.test(ua)) info.os = "Android";
-        else if (/iPad|iPhone|iPod/.test(ua)) info.os = "iOS";
-        else if (/windows/i.test(ua)) info.os = "Windows";
-        else if (/mac os/i.test(ua)) info.os = "macOS";
-        else if (/linux/i.test(ua)) info.os = "Linux";
-
-        // Browser Detection
-        if (ua.includes("Chrome") && !ua.includes("Edg")) info.browser = "Chrome";
-        else if (ua.includes("Safari") && !ua.includes("Chrome")) info.browser = "Safari";
-        else if (ua.includes("Firefox")) info.browser = "Firefox";
-        else if (ua.includes("Edg")) info.browser = "Edge";
-
-        // Battery
-        if ('getBattery' in navigator) {
-            try {
-                const battery = await navigator.getBattery();
-                info.battery = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Discharging'})`;
-            } catch(e) {}
-        }
-
-        // Network
-        if (navigator.connection) {
-            info.network = `${navigator.connection.effectiveType || 'Unknown'} (${navigator.connection.downlink || 0} Mbps)`;
-        }
-
-        // GPU Detection via WebGL
-        try {
-            const canvas = document.createElement('canvas');
-            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-            if (gl) {
-                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                if (debugInfo) {
-                    info.gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                } else {
-                    info.gpu = gl.getParameter(gl.RENDERER);
-                }
+const DeviceDetector = {
+    getDeviceInfo: async function() {
+        const gl = document.createElement('canvas').getContext('webgl');
+        let gpu = 'Unknown GPU';
+        if (gl) {
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) {
+                gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
             }
-        } catch(e) {}
+        }
 
-        return info;
-    }
+        const cores = navigator.hardwareConcurrency || 'Unknown';
+        const ram = navigator.deviceMemory ? `${navigator.deviceMemory} GB+` : 'Unknown';
+        
+        let connection = 'Unknown';
+        if (navigator.connection) {
+            connection = `${navigator.connection.effectiveType} (DL: ${navigator.connection.downlink}Mbps, RTT: ${navigator.connection.rtt}ms)`;
+        }
 
-    static renderInfo(info, containerId) {
+        let storage = 'Unknown';
+        if (navigator.storage && navigator.storage.estimate) {
+            const est = await navigator.storage.estimate();
+            storage = `${(est.quota / (1024*1024*1024)).toFixed(2)} GB`;
+        }
+
+        return {
+            "OS / Browser": navigator.userAgent.split(' ')[0] + " " + navigator.platform,
+            "Logical Cores": cores,
+            "RAM Estimate": ram,
+            "GPU Renderer": gpu,
+            "Resolution": `${window.screen.width}x${window.screen.height} (@${window.devicePixelRatio}x)`,
+            "Network": connection,
+            "Storage Quota": storage,
+            "Language": navigator.language
+        };
+    },
+
+    render: async function(containerId) {
         const container = document.getElementById(containerId);
-        container.innerHTML = `
-            <div class="info-item"><span>OS</span><strong>${info.os}</strong></div>
-            <div class="info-item"><span>Browser</span><strong>${info.browser}</strong></div>
-            <div class="info-item"><span>CPU Cores</span><strong>${info.cpuCores} Threads</strong></div>
-            <div class="info-item"><span>RAM Est.</span><strong>${info.ram}</strong></div>
-            <div class="info-item" style="grid-column: span 2;"><span>GPU</span><strong>${info.gpu}</strong></div>
-            <div class="info-item"><span>Resolution</span><strong>${info.resolution}</strong></div>
-            <div class="info-item"><span>Battery</span><strong>${info.battery}</strong></div>
-        `;
+        const info = await this.getDeviceInfo();
+        container.innerHTML = '';
+        for (const [key, value] of Object.entries(info)) {
+            container.innerHTML += `<div class="device-info-item"><span>${key}:</span> <strong>${value}</strong></div>`;
+        }
     }
-}
+};

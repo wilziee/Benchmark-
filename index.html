@@ -3,101 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> XAERISOFT BENCHMARK</title>
+    <title>Xaerisoft benchmark</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Background Aurora & Stars -->
     <div class="aurora-bg"></div>
-    <div class="stars"></div>
+    <div class="container">
+        <header>
+            <h1>Xaerisoft <span>Pro</span></h1>
+            <p>Benchmark web</p>
+        </header>
 
-    <div id="app">
-        <!-- LOADING SCREEN -->
-        <section id="screen-loading" class="screen active">
-            <div class="loader-ring"></div>
-            <h1 class="logo glow-text">!XAERISOFT</h1>
-            <p>Menginstal Sistem...</p>
-        </section>
-
-        <!-- HOME SCREEN -->
-        <section id="screen-home" class="screen hidden">
-            <header>
-                <h1 class="logo glow-text">⚡ XAERISOFT BENCHMARK</h1>
-                <button id="btn-theme" class="glass-btn">🌙</button>
-            </header>
-            
-            <div class="glass-card device-info">
-                <h2>System Information</h2>
-                <div class="grid-info" id="device-details">
-                    <!-- Populated by device.js -->
-                </div>
+        <main id="app-content">
+            <div class="device-info-card glass" id="device-info">
+                <h3>Mengambil data perangkat...</h3>
             </div>
 
-            <div class="action-area">
-                <button id="btn-start" class="btn-primary glow-button">▶ Mulai Tes</button>
-            </div>
-        </section>
-
-        <!-- BENCHMARK SCREEN -->
-        <section id="screen-benchmark" class="screen hidden">
-            <h2 class="glow-text">TESTING IN PROGRESS</h2>
-            <div class="benchmark-container glass-card">
+            <div class="benchmark-ui">
                 <div class="progress-ring-container">
                     <svg class="progress-ring" width="200" height="200">
-                        <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="transparent" r="90" cx="100" cy="100"/>
-                        <circle class="progress-ring-circle" id="progress-circle" stroke="#e0aaff" stroke-width="8" fill="transparent" r="90" cx="100" cy="100"/>
+                        <circle class="progress-ring__circle" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="transparent" r="90" cx="100" cy="100"/>
+                        <circle class="progress-ring__circle progress-value" stroke="#00ffcc" stroke-width="8" fill="transparent" r="90" cx="100" cy="100"/>
                     </svg>
-                    <div class="progress-text">
-                        <span id="progress-percent">0%</span>
-                    </div>
+                    <div class="progress-text" id="status-text">Siap</div>
                 </div>
-                <div class="test-status">
-                    <h3 id="current-test-name">Proses...</h3>
-                    <p id="est-time">Estimasi waktu: 30-60 detik</p>
+                
+                <button id="start-btn" class="neon-btn">JALANKAN BENCHMARK</button>
+            </div>
+
+            <div id="results" class="results-card glass hidden">
+                <h2>Total Score</h2>
+                <div class="total-score" id="final-score">0</div>
+                <div class="rank-badge" id="rank-badge">Evaluating...</div>
+                
+                <div class="score-details">
+                    <div class="score-item"><span>CPU</span> <strong id="score-cpu">0</strong></div>
+                    <div class="score-item"><span>GPU</span> <strong id="score-gpu">0</strong></div>
+                    <div class="score-item"><span>RAM</span> <strong id="score-ram">0</strong></div>
+                    <div class="score-item"><span>Storage</span> <strong id="score-storage">0</strong></div>
+                    <div class="score-item"><span>Browser</span> <strong id="score-browser">0</strong></div>
+                    <div class="score-item"><span>AI (NPU Sim)</span> <strong id="score-ai">0</strong></div>
                 </div>
-                <!-- Visualizer for GPU/CPU -->
-                <canvas id="visualizer" width="300" height="150"></canvas>
             </div>
-        </section>
-
-        <!-- RESULT SCREEN -->
-        <section id="screen-result" class="screen hidden">
-            <header>
-                <h1 class="logo glow-text">⚡ XAERISOFT</h1>
-            </header>
-            
-            <div class="result-header glass-card">
-                <h3>TOTAL SCORE</h3>
-                <div class="total-score glow-text" id="final-score">0</div>
-                <div class="rating-badge" id="rating-badge">Flagship</div>
-            </div>
-
-            <div class="grid-scores">
-                <div class="glass-card score-card"><span>CPU</span><strong id="score-cpu">0</strong></div>
-                <div class="glass-card score-card"><span>GPU</span><strong id="score-gpu">0</strong></div>
-                <div class="glass-card score-card"><span>RAM</span><strong id="score-ram">0</strong></div>
-                <div class="glass-card score-card"><span>Storage</span><strong id="score-storage">0</strong></div>
-                <div class="glass-card score-card"><span>Browser</span><strong id="score-browser">0</strong></div>
-                <div class="glass-card score-card"><span>AI</span><strong id="score-ai">0</strong></div>
-            </div>
-
-            <div class="glass-card comparison-card">
-                <h3>Hasil Performa</h3>
-                <p>Lebih cepat dari: <strong id="comparison-device" class="glow-text">Menghitung...</strong></p>
-            </div>
-
-            <div class="action-grid">
-                <button id="btn-export-png" class="glass-btn">🖼 Export PNG</button>
-                <button id="btn-export-pdf" class="glass-btn">📄 Export PDF</button>
-                <button id="btn-share" class="glass-btn">🔗 Share</button>
-                <button id="btn-restart" class="btn-primary">🔄 Retest</button>
-            </div>
-        </section>
+        </main>
     </div>
 
-    <!-- Hidden canvas for Confetti & PNG Export -->
-    <canvas id="canvas-confetti"></canvas>
-    
+    <!-- Hidden Canvas for GPU Test -->
+    <canvas id="gpu-canvas" style="display:none;"></canvas>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="device.js"></script>
     <script src="benchmark.js"></script>
     <script src="script.js"></script>
